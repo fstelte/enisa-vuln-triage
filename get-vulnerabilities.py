@@ -35,15 +35,15 @@ def query_api(product, vendor, exploited=None):
     if response.status_code == 200:
         try:
             data = json.loads(response.text)
-            print(f"Received data for {product} {vendor}:")
+            print(f"Received data for {product} from {vendor}:")
             print(json.dumps(data, indent=2)[:500])  # Print first 500 characters of formatted JSON
             return data
         except json.JSONDecodeError:
-            print(f"Error decoding JSON for {product} {vendor}")
+            print(f"Error decoding JSON for {product} from {vendor}")
             print(f"Response content: {response.text[:200]}...")
             return None
     else:
-        print(f"Error querying API for {product} {vendor}: {response.status_code}")
+        print(f"Error querying API for {product} from {vendor}: {response.status_code}")
         print(f"Response content: {response.text[:200]}...")
         return None
 
@@ -102,6 +102,7 @@ def save_to_html(data, filename):
         <table>
             <thead>
                 <tr>
+                    <th>Product</th>
     """
     
     # Add header, excluding 'enisaIdProduct' and 'enisaIdVendor'
@@ -115,9 +116,15 @@ def save_to_html(data, filename):
             <tbody>
     """
     
-    # Add data rows, excluding 'enisaIdProduct' and 'enisaIdVendor'
+    # Add data rows, including product information
     for row in data:
         html_content += "<tr>"
+        
+        # Add product information
+        products = row.get('enisaIdProduct', [])
+        product_names = ', '.join(p['product']['name'] for p in products if 'product' in p and 'name' in p['product'])
+        html_content += f"<td>{html.escape(product_names)}</td>"
+        
         for key, value in row.items():
             if key not in ['enisaIdProduct', 'enisaIdVendor']:
                 if key == 'baseScore':
@@ -159,8 +166,16 @@ def main():
             results = query_api(product, vendor, exploited)
             if results:
                 if isinstance(results, dict) and 'items' in results:
+                    # Add product and vendor information to each item
+                    for item in results['items']:
+                        item['queried_product'] = product
+                        item['queried_vendor'] = vendor
                     all_results.extend(results['items'])
                 elif isinstance(results, list):
+                    # Add product and vendor information to each item
+                    for item in results:
+                        item['queried_product'] = product
+                        item['queried_vendor'] = vendor
                     all_results.extend(results)
                 else:
                     print(f"Unexpected data structure for {product} {vendor}:")
