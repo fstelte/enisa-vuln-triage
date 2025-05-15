@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<products>
+    <product>
+        <name>Windows</name>
+        <vendor>Microsoft</vendor>
+    </product>
+    <product>
+        <name>iOS</name>
+        <vendor>Apple</vendor>
+    </product>
+    <product>
+        <name>Android</name>
+        <vendor>Google</vendor>
+    </product>
+</products>
