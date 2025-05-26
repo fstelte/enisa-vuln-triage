@@ -7,8 +7,9 @@ This Python script is designed to query the ENISA (European Union Agency for Cyb
 The main objectives of this script are:
 1. To fetch vulnerability data from the ENISA API for specified products and vendors.
 2. To generate detailed reports of vulnerabilities, both exploited and non-exploited.
-3. To provide an easy-to-read HTML report with color-coded severity scores.
-4. To offer a CSV export for further data analysis.
+3. Specify date ranges for vulnerability queries
+4. To provide an easy-to-read HTML report with color-coded severity scores.
+5. To offer a CSV export for further data analysis.
 
 ## Setup
 
@@ -50,6 +51,8 @@ The products.xml file is used to specify which products and vendors you want to 
     <product>
         <name>Product Name</name>
         <vendor>Vendor Name</vendor>
+        <end_date>2025-01-01</end_date>
+        <start_date>2023-01-01</start_date>
     </product>
     <!-- Add more product entries as needed -->
 </products>
@@ -64,14 +67,18 @@ The products.xml file is used to specify which products and vendors you want to 
     <product>
         <name>Windows</name>
         <vendor>Microsoft</vendor>
+        <start_date>2023-01-01</start_date>
+        <end_date>2023-12-31</end_date>
     </product>
     <product>
         <name>iOS</name>
         <vendor>Apple</vendor>
+        <start_date>2023-06-01</start_date>
     </product>
     <product>
         <name>Android</name>
         <vendor>Google</vendor>
+        <end_date>2023-05-31</end_date>
     </product>
 </products>
 ```
@@ -96,6 +103,12 @@ The script generates four files in the output directory:
 - `vulnerabilities_not_exploited.html`
 
 The HTML reports include color-coded severity scores for easy identification of high-risk vulnerabilities.
+
+## Date Range Functionality
+- If no dates are specified for a product, all vulnerabilities will be retrieved.
+- If only a start date is specified, vulnerabilities from that date to the current date will be retrieved.
+- If only an end date is specified, all vulnerabilities up to that date will be retrieved.
+- If both start and end dates are specified, vulnerabilities within that range will be retrieved.
 
 ## Note
 

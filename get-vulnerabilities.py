@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as ET
 import requests
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import time
 import json
@@ -14,18 +14,31 @@ def parse_xml(file_path):
     for product in root.findall('product'):
         name = product.find('name').text
         vendor = product.find('vendor').text
-        products.append((name, vendor))
+        start_date = product.find('start_date').text if product.find('start_date') is not None else None
+        end_date = product.find('end_date').text if product.find('end_date') is not None else None
+        products.append((name, vendor, start_date, end_date))
     return products
 
-def query_api(product, vendor, exploited=None):
+def query_api(product, vendor, exploited=None, start_date=None, end_date=None):
     base_url = "https://euvdservices.enisa.europa.eu/api/vulnerabilities"
     params = {
         "product": product,
         "vendor": vendor,
         "size": 100
     }
+    
     if exploited is not None:
         params["exploited"] = str(exploited).lower()
+    
+    # Handle date parameters
+    if start_date and end_date:
+        params["from"] = start_date
+        params["to"] = end_date
+    elif start_date:
+        params["from"] = start_date
+        params["to"] = datetime.now().strftime("%Y-%m-%d")
+    elif end_date:
+        params["to"] = end_date
     
     headers = {
         "User-Agent": "VulnerabilityQueryScript/1.0"
@@ -152,6 +165,7 @@ def save_to_html(data, filename):
     with open(filename, 'w', encoding='utf-8') as htmlfile:
         htmlfile.write(html_content)
     print(f"HTML data saved to {filename}")
+
 def main():
     xml_file = "products.xml"
     products = parse_xml(xml_file)
@@ -162,8 +176,8 @@ def main():
     
     for exploited in [True, False]:
         all_results = []
-        for product, vendor in products:
-            results = query_api(product, vendor, exploited)
+        for product, vendor, start_date, end_date in products:
+            results = query_api(product, vendor, exploited, start_date, end_date)
             if results:
                 if isinstance(results, dict) and 'items' in results:
                     # Add product and vendor information to each item
